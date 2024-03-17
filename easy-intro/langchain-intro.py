@@ -1,6 +1,6 @@
 from langchain.chains.llm import LLMChain
-from langchain.chat_models import ChatOpenAI
 from langchain_core.prompts import PromptTemplate
+from langchain_openai import ChatOpenAI
 
 from thrid_parties.linkedin import scrape_linkedin_profile
 
@@ -8,7 +8,6 @@ from dotenv import load_dotenv
 
 if __name__ == '__main__':
     load_dotenv()
-    # print(scrape_linkedin_profile("https://www.linkedin.com/in/ashwath-nandakumar/"))
 
     summary_template = """
     given the linkedin information {information} about a person from, I want you to create:
@@ -24,4 +23,7 @@ if __name__ == '__main__':
 
     chain = LLMChain(llm=llm, prompt=summary_prompt_template)
 
-    print(chain.run(information=scrape_linkedin_profile("https://www.linkedin.com/in/ashwath-nandakumar/")))
+    scraped_profile_info = scrape_linkedin_profile("https://www.linkedin.com/in/ashwath-nandakumar/")
+
+    if not scraped_profile_info.get("error"):
+        print(chain.run(information=scraped_profile_info))
