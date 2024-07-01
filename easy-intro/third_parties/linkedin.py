@@ -3,7 +3,7 @@ import os
 import requests
 
 
-def scrape_linkedin_profile(linkedin_profile_url: str) -> dict:
+def scrape_linkedin_profile(linkedin_profile_url: str, **kwargs) -> dict:
     """
     scrape information from linkedin profiles,
     Manually scrape the information from the linkedin profile
@@ -13,12 +13,16 @@ def scrape_linkedin_profile(linkedin_profile_url: str) -> dict:
 
     print(linkedin_profile_url)
 
-    api_url = "https://nubela.co/proxycurl//api/v2/linkedin"
-    # TODO: Use the Proxycurl API to scrape the linkedin profile
-    # api_url = ("https://gist.githubusercontent.com/ashwathnanda/a8da1ec776a665f58d2141ff61ce3c1f/raw/78090f9714e83d11f66cc5cc1149bdda36f1c9bb/riya-verma-linkedin.json")
-    header = {
-        "Authorization": f"Bearer {os.environ.get('PROXY_CURL_TOKEN')}"
-    }
+    if kwargs.get("mock"):
+        api_url = (
+            "https://gist.githubusercontent.com/ashwathnanda/a8da1ec776a665f58d2141ff61ce3c1f/raw/78090f9714e83d11f66cc5cc1149bdda36f1c9bb/riya-verma-linkedin.json")
+        header = {}
+
+    else:
+        api_url = "https://nubela.co/proxycurl//api/v2/linkedin"
+        header = {
+            "Authorization": f"Bearer {os.environ.get('PROXY_CURL_TOKEN')}"
+        }
 
     # Make a request to the API
     response = requests.get(api_url, params={"url": linkedin_profile_url}, headers=header)

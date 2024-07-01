@@ -8,6 +8,8 @@ from third_parties.twitter import scrape_tweets
 from agents.linkedin_lookup_agent import lookup as linkedin_lookup_agent
 from agents.twitter_lookup_agent import lookup as twitter_lookup_agent
 
+from output_parsers import summary_parser
+
 from dotenv import load_dotenv
 
 
@@ -15,55 +17,40 @@ def get_open_ai_llm():
     return ChatOpenAI(temperature=0, model_name="gpt-3.5-turbo")
 
 
-def linkedin_lookup():
-    summary_template = """
-       given the linkedin information {information} about a person from, I want you to create:
-       1. A short summary
-       2. Two interesting facts about them
-       Add some spicy fun element to the 2nd point basen on the information provided
-       """
-
-    summary_prompt_template = PromptTemplate(
-        input_variables=["information"], template=summary_template
+def ice_break_with(name: str) -> str:
+    linkedin_username = linkedin_lookup_agent(name=name)
+    linkedin_data = scrape_linkedin_profile(
+        linkedin_profile_url=linkedin_username, mock=True
     )
-    llm = get_open_ai_llm()
 
-    chain = LLMChain(llm=llm, prompt=summary_prompt_template)
+    twitter_username = twitter_lookup_agent(name=name)
+    tweets = scrape_tweets(username=twitter_username, mock=True)
 
-    linkedin_profile_url = linkedin_lookup_agent(name="Ashwath Nandakumar")
-
-    scraped_profile_info = scrape_linkedin_profile(linkedin_profile_url)
-
-    if not scraped_profile_info.get("error"):
-        print(chain.run(information=scraped_profile_info))
-
-
-def twitter_lookup():
     summary_template = """
-    given the twitter information {information} about a person from, I want you to create something about them from Twitter: 
+    given the information about a person from linkedin {information},
+    and their latest twitter posts {twitter_posts} I want you to create:
     1. A short summary
-    2. Two interesting facts about
-    Add some spicy fun element to the {information}
+    2. two interesting facts about them 
+
+    Use both information from twitter and Linkedin
+    \n{format_instructions}
     """
     summary_prompt_template = PromptTemplate(
-        input_variables=["information"], template=summary_template
+        input_variables=["information", "twitter_posts"],
+        template=summary_template,
+        partial_variables={
+            "format_instructions": summary_parser.get_format_instructions()
+        },
     )
+
     llm = get_open_ai_llm()
 
-    chain = LLMChain(llm=llm, prompt=summary_prompt_template)
+    chain = summary_prompt_template | llm | summary_parser
 
-    twitter_profile_handle = twitter_lookup_agent(name="Ashwath Nanda")
-
-    scraped_profile_info = scrape_tweets(twitter_profile_handle)
-
-    if not scraped_profile_info.get("error"):
-        print(chain.run(information=scraped_profile_info))
+    res = chain.invoke(input={"information": linkedin_data, "twitter_posts": tweets})
+    return res
 
 
 if __name__ == '__main__':
     load_dotenv()
-
-    # linkedin_lookup()
-    twitter_lookup()
-
-    scrape_tweets("Elon Musk")
+    ice_break_with(name="Ashwath Nandakumar")
