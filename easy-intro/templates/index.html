@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Profile Explorer</title>
+        <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
+        <style>
+            body {
+                background: linear-gradient(135deg, #f0f4f8, #d9e2ec);
+            }
+            .spinner-border {
+                display: inline-block;
+                width: 3rem;
+                height: 3rem;
+                vertical-align: text-bottom;
+                border: 0.25em solid currentColor;
+                border-right-color: transparent;
+                border-radius: 50%;
+                animation: spinner-border .75s linear infinite;
+            }
+            @keyframes spinner-border {
+                100% {
+                    transform: rotate(360deg);
+                }
+            }
+        </style>
+    </head>
+    <body class="text-gray-800 flex flex-col items-center justify-center min-h-screen">
+        <header class="mb-6">
+            <form id="name-form" class="bg-white p-6 rounded-lg shadow-md">
+                <h1 class="text-2xl font-bold mb-4">Profile Explorer</h1>
+                <input type="text" name="name" placeholder="Enter name" class="w-full p-2 mb-4 border border-gray-300 rounded-md" required>
+                <button id="magic-button" type="submit" class="w-full bg-blue-500 text-white p-2 rounded-md hover:bg-blue-600 transition-colors">Explore</button>
+            </form>
+        </header>
+        <div id="spinner" class="flex justify-center items-center" style="display: none;">
+            <div class="spinner-border text-blue-500"></div>
+        </div>
+        <main id="result" class="bg-white p-6 rounded-lg shadow-md w-full max-w-3xl animate__animated" style="display: none;">
+            <div class="text-center mb-6">
+                <img id="profile-pic" src="" alt="Profile Picture" class="w-32 h-32 rounded-full mx-auto">
+            </div>
+            <div>
+                <h2 class="text-xl font-semibold mb-2">Summary</h2>
+                <p id="summary" class="mb-4"></p>
+            </div>
+            <div>
+                <h2 class="text-xl font-semibold mb-2">Interesting Facts</h2>
+                <div id="facts" class="mb-4"></div>
+            </div>
+<!--            <div>-->
+<!--                <h2 class="text-xl font-semibold mb-2">Ice Breakers</h2>-->
+<!--                <div id="ice-breakers" class="mb-4"></div>-->
+<!--            </div>-->
+<!--            <div>-->
+<!--                <h2 class="text-xl font-semibold mb-2">Topics of Interest</h2>-->
+<!--                <div id="topics-of-interest"></div>-->
+<!--            </div>-->
+        </main>
+        <div id="error-message" class="bg-red-100 text-red-700 p-4 rounded-lg shadow-md mt-4" style="display: none;">
+            Unexpected error occurred. Please try again later.
+        </div>
+
+        <script>
+            const form = document.getElementById("name-form");
+            const spinner = document.getElementById("spinner");
+            const result = document.getElementById("result");
+            const errorMessage = document.getElementById("error-message");
+
+            form.addEventListener("submit", (ev) => {
+                ev.preventDefault();
+
+                result.style.display = "none";
+                spinner.style.display = "flex";
+                errorMessage.style.display = "none";
+
+                const formData = new FormData(form);
+                const userName = formData.get("name");
+                const url = `/profile-summary?user_name=${encodeURIComponent(userName)}`;
+
+                fetch(url, { method: "GET" })
+                    .then(response => {
+                        if (response.ok) return response.json();
+                        throw new Error("GET request failed");
+                    })
+                    .then(data => {
+                        document.getElementById("profile-pic").src = data.picture_url;
+                        document.getElementById("summary").textContent = data.summary_and_facts.summary;
+                        createHtmlList(document.getElementById("facts"), data.summary_and_facts.facts);
+<!--                        createHtmlList(document.getElementById("ice-breakers"), data.ice_breakers);-->
+<!--                        createHtmlList(document.getElementById("topics-of-interest"), data.topics_of_interest);-->
+
+                        spinner.style.display = "none";
+                        result.style.display = "block";
+                        result.classList.add("animate__fadeIn");
+                    })
+                    .catch(error => {
+                        console.error("Error:", error);
+                        spinner.style.display = "none";
+                        result.style.display = "none";
+                        errorMessage.style.display = "block";
+                        errorMessage.classList.add("animate__shakeX");
+                    });
+            });
+
+            function createHtmlList(element, items) {
+                const ul = document.createElement("ul");
+
+                items.forEach(item => {
+                    const li = document.createElement("li");
+                    li.textContent = item;
+                    ul.appendChild(li);
+                });
+
+                element.innerHTML = "";
+                element.appendChild(ul);
+            }
+        </script>
+    </body>
+</html>
