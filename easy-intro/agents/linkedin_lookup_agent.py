@@ -19,7 +19,7 @@ def lookup(name: str) -> str:
         Tool(
             "Crawl google 4 linkedin profile page",
             func=get_profile_url,
-            description="Crawl google to find the linkedin profile page of the person"
+            description="Crawl google to find the linkedin profile page of the person",
         )
     ]
 
@@ -33,8 +33,12 @@ def lookup(name: str) -> str:
     # verbose=True is very imp. This enables the agent to print the logs.
     agent_executor = AgentExecutor(agent=agent, tools=tools_for_agents, verbose=True)
 
-    prompt_template = PromptTemplate(template=template, input_variables=["name_Of_Person"])
+    prompt_template = PromptTemplate(
+        template=template, input_variables=["name_Of_Person"]
+    )
 
     # Invoke will take a dict of inputs.
-    execution_chain = agent_executor.invoke({"input": {"name_Of_Person": name}, "prompt": prompt_template})
+    execution_chain = agent_executor.invoke(
+        {"input": {"name_Of_Person": name}, "prompt": prompt_template}
+    )
     return execution_chain.get("output")

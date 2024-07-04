@@ -19,7 +19,11 @@ def on_startup() -> None:
     HTML_DIR.joinpath("404.html").write_text("<h1>Not found</h1>")
 
 
-@get("/profile-summary", sync_to_thread=False, exception_handlers={RateLimitError: router_handler_exception_handler})
+@get(
+    "/profile-summary",
+    sync_to_thread=False,
+    exception_handlers={RateLimitError: router_handler_exception_handler},
+)
 def profile_summary(user_name: str) -> dict[str, str]:
     try:
         summary, profile_url = ice_break_with(user_name)
@@ -31,12 +35,11 @@ def profile_summary(user_name: str) -> dict[str, str]:
         raise e
 
 
-app = Litestar(route_handlers=[
-    profile_summary,
-    create_static_files_router(
-            path="/",
-            directories=["templates"],
-            html_mode=True)
+app = Litestar(
+    route_handlers=[
+        profile_summary,
+        create_static_files_router(path="/", directories=["templates"], html_mode=True),
     ],
     exception_handlers={InternalServerException: app_exception_handler},
-    debug=True)
+    debug=True,
+)

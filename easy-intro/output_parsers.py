@@ -9,10 +9,7 @@ class Summary(BaseModel):
     facts: List[str] = Field(description="Two interesting facts about the person")
 
     def to_dict(self) -> Dict[str, Any]:
-        return {
-            "summary": self.summary,
-            "facts": self.facts
-        }
+        return {"summary": self.summary, "facts": self.facts}
 
 
 summary_parser = PydanticOutputParser(pydantic_object=Summary)

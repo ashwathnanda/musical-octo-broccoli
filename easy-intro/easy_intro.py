@@ -52,6 +52,6 @@ def ice_break_with(name: str) -> Tuple[Summary, str]:
     return res, linkedin_data.get("profile_url")
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     load_dotenv()
     ice_break_with(name="Ashwath Nandakumar")

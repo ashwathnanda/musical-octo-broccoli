@@ -17,6 +17,10 @@ def app_exception_handler(request: Request, exc: HTTPException) -> Response:
 
 def router_handler_exception_handler(request: Request, exc: RateLimitError) -> Response:
     return Response(
-        content={"error": "OpenAI error", "path": request.url.path, "details": exc.message},
+        content={
+            "error": "OpenAI error",
+            "path": request.url.path,
+            "details": exc.message,
+        },
         status_code=exc.status_code,
     )
